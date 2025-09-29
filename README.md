@@ -30,59 +30,129 @@ Room-Scout-self-contained/
 ```
 
 
-## Quick start (recommended): Run only the frontend
+## One‑pass guide: Run the full stack locally (self‑contained)
 
-The frontend is already wired to call a hosted backend at `http://157.173.114.224:8080`. You can run just the UI and immediately interact with the app.
+Follow these steps top‑to‑bottom to run BOTH backend and frontend locally using an in‑memory H2 database. Works on macOS, Windows, and Linux.
 
-Prerequisites
-- Node.js 18+ and npm
+0) Prerequisites check (all OS)
+- Commands:
+	- Check Java 17:
+		```bash
+		java -version
+		```
+	- Check Node.js (v18+ recommended):
+		```bash
+		node -v
+		```
+- Expected outcome:
+	- `java -version` prints version 17.x.
+	- `node -v` prints v18.x or newer.
+	- If missing, install Java 17 and Node 18+ (see Troubleshooting section).
 
-Steps (macOS, Linux, Windows PowerShell or CMD)
-1) Install dependencies
-	 - Command:
-		 ```bash
-		 cd frontend
-		 npm ci
-		 ```
-	 - Expected outcome:
-		 - npm installs dependencies cleanly (you’ll see a summary like “added X packages”).
+1) Start the backend (local profile, H2 in‑memory DB)
+- macOS/Linux:
+	```bash
+	cd backend/room-scout
+	./gradlew bootRun --args='--spring.profiles.active=local'
+	```
+- Windows PowerShell/CMD:
+	```bat
+	cd backend\room-scout
+	gradlew.bat bootRun --args="--spring.profiles.active=local"
+	```
+- Expected outcome:
+	- Build completes, logs show:
+		- “Tomcat started on port(s): 8080”
+		- “Started RoomScoutApplication …”
+	- The app uses H2 (no MySQL needed) and does NOT require RabbitMQ or Eureka.
+	- Keep this terminal running.
 
-2) Start the dev server
-	 - Command:
-		 ```bash
-		 npm start
-		 ```
-	 - Expected outcome:
-		 - Terminal shows “Compiled successfully!”
-		 - App served at: http://localhost:3000
-		 - Browser opens automatically; you can browse properties, log in/register, and use admin features. API calls go to the hosted backend.
+2) Point the frontend to your local backend (one‑time switch)
+- The frontend code currently calls the hosted backend via absolute URLs. Replace them to target your local backend on `http://localhost:8080`.
+- macOS/Linux:
+	```bash
+	cd ../../frontend
+	grep -RIl "http://157.173.114.224:8080" src | xargs sed -i '' 's#http://157.173.114.224:8080#http://localhost:8080#g'
+	```
+- Windows PowerShell:
+	```powershell
+	cd ..\..\frontend
+	Get-ChildItem -Recurse -Include *.js,*.jsx,*.ts,*.tsx -Path src | ForEach-Object {
+		(Get-Content $_.FullName) -replace 'http://157.173.114.224:8080','http://localhost:8080' | Set-Content $_.FullName
+	}
+	```
+- Expected outcome:
+	- All API calls from the UI will go to your local backend on port 8080.
 
-You can stop here. The next sections are only if you want to run backend services locally.
+3) Install frontend dependencies
+- Commands (all OS):
+	```bash
+	npm ci
+	```
+- Expected outcome:
+	- npm installs packages cleanly.
+
+4) Start the frontend
+- Commands (all OS):
+	```bash
+	npm start
+	```
+- Expected outcome:
+	- Terminal shows “Compiled successfully!”.
+	- App is available at http://localhost:3000 and auto‑opens in your browser.
+	- Interactions (login/register, browse, bookings, admin) now hit your local backend.
+
+5) Smoke tests (optional but recommended)
+- API docs (Swagger):
+	- Open http://localhost:8080/swagger-ui/index.html — you should see the Swagger UI.
+- Quick curl (macOS/Linux):
+	```bash
+	curl -s http://localhost:8080/properties | head -n 5
+	```
+	- Expected outcome: JSON array or empty list `[]` depending on seed/data.
+
+6) Shutdown
+- Frontend: press Ctrl+C in the terminal running `npm start`.
+- Backend: press Ctrl+C in the terminal running `bootRun`.
+
+That’s it. You’re running the full stack locally with zero external services.
 
 
-## Prerequisites for running backend locally
+## Appendix A: Alternative backend start (Docker Compose)
 
-- Java 17 (JDK)
-- Docker Desktop (if running backend via Docker Compose)
+If you prefer Docker, you can run the backend in a container with the local profile enabled:
 
-Check your environment
-- Java:
-	- macOS/Linux: `java -version` → should show version 17
-	- Windows (PowerShell/CMD): `java -version` → should show version 17
-- Docker:
-	- `docker --version` → prints Docker version (Docker Desktop must be running)
+1) Build and start (detached)
+- macOS/Linux:
+	```bash
+	cd backend/room-scout/docker
+	docker compose up --build -d
+	```
+- Windows PowerShell/CMD:
+	```bat
+	cd backend\room-scout\docker
+	docker compose up --build -d
+	```
+- Expected outcome:
+	- Container up mapping `8080:8080`.
+	- `SPRING_PROFILES_ACTIVE=local` is set in compose (uses H2, no Rabbit/Eureka).
 
-Install tips (optional)
-- macOS (Homebrew):
-	- `brew install openjdk@17`
-	- `brew install node`
-- Windows:
-	- Java 17: `winget install --id EclipseAdoptium.Temurin.17.JDK -e`
-	- Node.js: `winget install OpenJS.NodeJS.LTS`
-	- Docker Desktop: install from https://www.docker.com/products/docker-desktop/
-- Ubuntu/Debian (example):
-	- Java 17: `sudo apt-get update && sudo apt-get install -y openjdk-17-jdk`
-	- Node.js: https://github.com/nodesource/distributions or use nvm
+2) Logs and smoke test
+- Logs (all OS):
+	```bash
+	docker compose logs -f
+	```
+- Swagger UI: http://localhost:8080/swagger-ui/index.html
+
+3) Stop the container
+- macOS/Linux:
+	```bash
+	docker compose down
+	```
+- Windows PowerShell/CMD:
+	```bat
+	docker compose down
+	```
 
 
 ## Important backend note
@@ -99,76 +169,21 @@ Self‑contained local profile
 - Use this profile when running the backend locally (via Gradle or Docker Compose below).
 
 
-## Option A: Run the backend with Docker Compose (port 8080)
+## Appendix B: Quick start (frontend only, uses hosted backend)
 
-1) Build and start the backend container (detached)
-	 - Commands:
-		 - macOS/Linux:
-			 ```bash
-			cd backend/room-scout/docker
-			docker compose up --build -d
-			 ```
-		 - Windows PowerShell/CMD:
-			 ```bat
-			 cd backend\room-scout\docker
-			 docker compose up --build -d
-			 ```
-	 - Expected outcome:
-		- Docker builds the Spring Boot image and starts a container.
-		 - `docker ps` shows a container mapping `0.0.0.0:8080->8080/tcp`.
-		- The container uses `SPRING_PROFILES_ACTIVE=local` (H2 DB, Eureka/Rabbit disabled).
+If you only want to preview the UI against the hosted backend (no local backend):
 
-2) View logs to confirm startup
-	 - Command (all OS):
-		 ```bash
-		 docker compose logs -f
-		 ```
-	 - Expected outcome:
-		 - You’ll see: “Tomcat started on port(s): 8080” and “Started RoomScoutApplication …”.
-		 - If remote DB/RabbitMQ are down/unreachable, logs may show connection errors.
-
-3) Smoke test the API
-	 - Commands:
-		 - macOS/Linux:
-			 ```bash
-			 curl -s http://localhost:8080/swagger-ui/index.html | head -n 5
-			 ```
-		 - Windows PowerShell:
-			 ```powershell
-			 (Invoke-WebRequest http://localhost:8080/swagger-ui/index.html).Content.Substring(0,500)
-			 ```
-		 - Windows CMD:
-			 ```bat
-			 curl http://localhost:8080/swagger-ui/index.html
-			 ```
-	 - Expected outcome:
-		 - HTML content for Swagger UI if the app is healthy on 8080.
+1) Install and start
+```bash
+cd frontend
+npm ci
+npm start
+```
+- Expected outcome:
+	- App at http://localhost:3000, calling the hosted API.
 
 
-## Option B: Run the backend with Gradle (no Docker)
-
-1) Start the Spring Boot app
-	 - Commands:
-		 - macOS/Linux:
-			 ```bash
-			 cd backend/room-scout
-			./gradlew bootRun --args='--spring.profiles.active=local'
-			 ```
-		 - Windows PowerShell/CMD:
-			 ```bat
-			 cd backend\room-scout
-			gradlew.bat bootRun --args="--spring.profiles.active=local"
-			 ```
-	 - Expected outcome:
-		- Build output followed by: “Tomcat started on port(s): 8080” and “Started RoomScoutApplication …”.
-		 - If remote dependencies aren’t reachable, you’ll see connection errors.
-		- With the `local` profile: H2 in‑memory DB is used; Eureka/RabbitMQ are disabled so the app should start without external services.
-
-2) Smoke test
-	 - See “Option A → Smoke test the API”.
-
-
-## Optional: Run the Email Provider (port 8089)
+## Appendix C: Optional — Run the Email Provider (port 8089)
 
 This microservice connects to remote RabbitMQ/Eureka. It’s optional for most UI flows.
 
@@ -197,30 +212,8 @@ This microservice connects to remote RabbitMQ/Eureka. It’s optional for most U
 		 - A line indicating Java is listening on 8089.
 
 
-## Switching the frontend to your local backend (optional)
-
-The frontend currently calls absolute URLs like `http://157.173.114.224:8080/...` in multiple files, so it will keep using the hosted backend even if you run your own backend locally. If you want the UI to talk to your local backend on `http://localhost:8080`, you can temporarily replace those URLs:
-
-- macOS/Linux (in `frontend/`):
-	```bash
-	cd frontend
-	grep -RIl "http://157.173.114.224:8080" src | xargs sed -i '' 's#http://157.173.114.224:8080#http://localhost:8080#g'
-	npm start
-	```
-
-- Windows PowerShell (in `frontend/`):
-	```powershell
-	cd frontend
-	Get-ChildItem -Recurse -Include *.js,*.jsx,*.ts,*.tsx -Path src | ForEach-Object {
-		(Get-Content $_.FullName) -replace 'http://157.173.114.224:8080','http://localhost:8080' | Set-Content $_.FullName
-	}
-	npm start
-	```
-
-Expected outcome
-- The app at http://localhost:3000 will now call your local backend at http://localhost:8080.
-
-Tip: For a permanent, maintainable solution, refactor the frontend to read a base API URL from an environment variable (e.g., `REACT_APP_API_BASE`) and centralize axios/fetch calls.
+## Appendix D: Tips
+- For a permanent, maintainable API switch, refactor the frontend to read a base API URL from an env var (e.g., `REACT_APP_API_BASE`) and centralize axios/fetch calls in a single module.
 
 
 ## Smoke tests (end‑to‑end)
