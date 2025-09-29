@@ -92,7 +92,11 @@ The backend’s `application.properties` is configured to use remote infrastruct
 - RabbitMQ (remote)
 - Eureka defaultZone (remote)
 
-This means the backend will try to connect to those remote services. If they’re not reachable, the backend will fail to start or return errors on DB/Rabbit operations. This repo does not include a local MySQL/RabbitMQ Compose setup.
+This means the backend will try to connect to those remote services. If they’re not reachable, the backend will fail to start or return errors on DB/Rabbit operations.
+
+Self‑contained local profile
+- We provide a local Spring profile (`local`) that uses an in‑memory H2 database and disables Eureka/RabbitMQ so you can run everything on your machine without external services.
+- Use this profile when running the backend locally (via Gradle or Docker Compose below).
 
 
 ## Option A: Run the backend with Docker Compose (port 8080)
@@ -101,8 +105,8 @@ This means the backend will try to connect to those remote services. If they’r
 	 - Commands:
 		 - macOS/Linux:
 			 ```bash
-			 cd backend/room-scout/docker
-			 docker compose up --build -d
+			cd backend/room-scout/docker
+			docker compose up --build -d
 			 ```
 		 - Windows PowerShell/CMD:
 			 ```bat
@@ -110,8 +114,9 @@ This means the backend will try to connect to those remote services. If they’r
 			 docker compose up --build -d
 			 ```
 	 - Expected outcome:
-		 - Docker builds the Spring Boot image and starts a container.
+		- Docker builds the Spring Boot image and starts a container.
 		 - `docker ps` shows a container mapping `0.0.0.0:8080->8080/tcp`.
+		- The container uses `SPRING_PROFILES_ACTIVE=local` (H2 DB, Eureka/Rabbit disabled).
 
 2) View logs to confirm startup
 	 - Command (all OS):
@@ -147,16 +152,17 @@ This means the backend will try to connect to those remote services. If they’r
 		 - macOS/Linux:
 			 ```bash
 			 cd backend/room-scout
-			 ./gradlew bootRun
+			./gradlew bootRun --args='--spring.profiles.active=local'
 			 ```
 		 - Windows PowerShell/CMD:
 			 ```bat
 			 cd backend\room-scout
-			 gradlew.bat bootRun
+			gradlew.bat bootRun --args="--spring.profiles.active=local"
 			 ```
 	 - Expected outcome:
-		 - Build output followed by: “Tomcat started on port(s): 8080” and “Started RoomScoutApplication …”.
+		- Build output followed by: “Tomcat started on port(s): 8080” and “Started RoomScoutApplication …”.
 		 - If remote dependencies aren’t reachable, you’ll see connection errors.
+		- With the `local` profile: H2 in‑memory DB is used; Eureka/RabbitMQ are disabled so the app should start without external services.
 
 2) Smoke test
 	 - See “Option A → Smoke test the API”.

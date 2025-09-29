@@ -1,9 +1,12 @@
 package com.room_scout.service;
 
 import com.room_scout.controller.dto.*;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import com.room_scout.config.RabbitMQConfig;
 
@@ -12,7 +15,7 @@ import java.util.Optional;
 
 @Service
 @Slf4j
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class BookingEmailPublisher {
 
     private final RabbitTemplate rabbitTemplate;
@@ -22,6 +25,11 @@ public class BookingEmailPublisher {
     private final RoomTypeService roomTypeService;
 
     public void sendBookingNotification(BookingDTO bookingDTO, String eventType) {
+        // In local profile, RabbitMQ config is disabled (@Profile("!local")), so rabbitTemplate may be null.
+        if (rabbitTemplate == null || rabbitMQConfig == null) {
+            log.info("RabbitMQ disabled in local profile. Skipping email notification.");
+            return;
+        }
         String userEmail = userService.getEmailById(bookingDTO.userId());
 
         Optional<UserDTO> user = userService.getUserById(bookingDTO.userId());
