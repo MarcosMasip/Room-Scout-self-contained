@@ -18,15 +18,15 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class BookingEmailPublisher {
 
-    private final RabbitTemplate rabbitTemplate;
-    private final RabbitMQConfig rabbitMQConfig;
+    private final java.util.Optional<RabbitTemplate> rabbitTemplate;
+    private final java.util.Optional<RabbitMQConfig> rabbitMQConfig;
     private final UserService userService;
     private final PropertyService propertyService;
     private final RoomTypeService roomTypeService;
 
     public void sendBookingNotification(BookingDTO bookingDTO, String eventType) {
-        // In local profile, RabbitMQ config is disabled (@Profile("!local")), so rabbitTemplate may be null.
-        if (rabbitTemplate == null || rabbitMQConfig == null) {
+        // In local profile, RabbitMQ config is disabled; Optional will be empty.
+        if (rabbitTemplate == null || rabbitTemplate.isEmpty() || rabbitMQConfig == null || rabbitMQConfig.isEmpty()) {
             log.info("RabbitMQ disabled in local profile. Skipping email notification.");
             return;
         }
@@ -58,9 +58,9 @@ public class BookingEmailPublisher {
                 LocalDateTime.now()
         );
 
-        rabbitTemplate.convertAndSend(
-                rabbitMQConfig.getExchange(),
-                rabbitMQConfig.getRoutingKey(),
+    rabbitTemplate.get().convertAndSend(
+        rabbitMQConfig.get().getExchange(),
+        rabbitMQConfig.get().getRoutingKey(),
                 notification
         );
 
