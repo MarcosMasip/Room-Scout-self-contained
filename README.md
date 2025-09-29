@@ -67,6 +67,12 @@ Follow these steps top‑to‑bottom to run BOTH backend and frontend locally us
 	 java -version
 	 ```
 
+ After switching, if Gradle still reports a different Java version:
+ ```bash
+ ./gradlew --stop
+ ./gradlew -version   # should now show Java 17
+ ```
+
 1) Start the backend (local profile, H2 in‑memory DB)
 - macOS/Linux:
 	```bash
