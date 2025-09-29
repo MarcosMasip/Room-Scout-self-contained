@@ -49,6 +49,24 @@ Follow these steps top‑to‑bottom to run BOTH backend and frontend locally us
 	- `node -v` prints v18.x or newer.
 	- If missing, install Java 17 and Node 18+ (see Troubleshooting section).
 
+ If your terminal shows Java 25 or another version (and the build fails with “Unsupported class file major version”):
+ - macOS (zsh):
+	 ```bash
+	 /usr/libexec/java_home -V
+	 export JAVA_HOME=$(/usr/libexec/java_home -v 17)
+	 export PATH="$JAVA_HOME/bin:$PATH"
+	 java -version
+	 ```
+ - Windows PowerShell (example, adjust path to your JDK 17):
+	 ```powershell
+	 $env:JAVA_HOME="C:\Program Files\Java\jdk-17"; $env:Path="$env:JAVA_HOME\bin;$env:Path"; java -version
+	 ```
+ - Linux (if JDK 17 installed via apt):
+	 ```bash
+	 sudo update-alternatives --config java   # choose 17
+	 java -version
+	 ```
+
 1) Start the backend (local profile, H2 in‑memory DB)
 - macOS/Linux:
 	```bash
@@ -125,12 +143,16 @@ If you prefer Docker, you can run the backend in a container with the local prof
 1) Build and start (detached)
 - macOS/Linux:
 	```bash
-	cd backend/room-scout/docker
+	cd backend/room-scout
+	./gradlew clean assemble
+	cd docker
 	docker compose up --build -d
 	```
 - Windows PowerShell/CMD:
 	```bat
-	cd backend\room-scout\docker
+	cd backend\room-scout
+	gradlew.bat clean assemble
+	cd docker
 	docker compose up --build -d
 	```
 - Expected outcome:
