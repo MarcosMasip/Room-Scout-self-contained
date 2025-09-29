@@ -1,5 +1,6 @@
 import React from "react";
 import DynamicCrud from "../DynamicCRUD";
+import { API_BASE } from '../../../../api/baseUrl';
 
 const columns = [
     { field: "id", headerName: "ID", width: 90 },
@@ -18,7 +19,7 @@ const formFields = [
     { name: "type", label: "Type", type: "text" }
 ];
 
-const apiEndpoint = "http://157.173.114.224:8080/properties";
+const apiEndpoint = `${API_BASE}/properties`;
 
 const PropertyCRUD = () => {
     return (

@@ -1,5 +1,6 @@
 import React from "react";
 import DynamicCrud from "../DynamicCRUD";
+import { API_BASE } from '../../../../api/baseUrl';
 
 const columns = [
 	{ field: "id", headerName: "ID", width: 90 },
@@ -21,7 +22,7 @@ const formFields = [
 	{ name: "role", label: "Role", type: "text" },
 ];
 
-const apiEndpoint = "http://157.173.114.224:8080/users";
+const apiEndpoint = `${API_BASE}/users`;
 
 const UserCRUD = () => {
 	return (

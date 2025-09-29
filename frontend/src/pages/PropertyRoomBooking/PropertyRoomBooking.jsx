@@ -3,6 +3,7 @@ import "./PropertyRoomBooking.css";
 import { useLocation } from "react-router-dom";
 import NavBar from "../../components/Generic/NavBar/NavBar";
 import axios from "axios";
+import { API_BASE } from '../../api/baseUrl';
 
 const PropertyRoomBooking = () => {
     const location = useLocation();
@@ -16,7 +17,7 @@ const PropertyRoomBooking = () => {
             try {
                 console.log(propertyId, startDate, endDate);
                 const availabilityResponse = await axios.get(
-                    `http://157.173.114.224:8080/bookings/availability?propertyId=${propertyId}&startDate=${startDate}&endDate=${endDate}`
+                    `${API_BASE}/bookings/availability?propertyId=${propertyId}&startDate=${startDate}&endDate=${endDate}`
                 );
 
                 setAvailabilityData(availabilityResponse.data);
@@ -28,7 +29,7 @@ const PropertyRoomBooking = () => {
         const fetchRoomTypes = async () => {
             try {
                 const roomTypesResponse = await axios.get(
-                    "http://157.173.114.224:8080/roomtypes"
+                    `${API_BASE}/roomtypes`
                 );
 
                 setRoomTypesData(roomTypesResponse.data);
@@ -65,7 +66,7 @@ const PropertyRoomBooking = () => {
 
         try {
             await axios.post(
-                "http://157.173.114.224:8080/bookings",
+                `${API_BASE}/bookings`,
                 bookingDetails
             );
 

@@ -2,6 +2,7 @@ import React, { useEffect, useCallback, useReducer } from "react";
 import DataTable from './DataTable/DataTable';
 import Add from "./Add/Add";
 import axios from "axios";
+import { API_BASE } from '../../../api/baseUrl';
 import './DynamicCRUD.scss';
 
 const initialState = {
@@ -38,7 +39,7 @@ const DynamicCrud = ({ title, columns, apiEndpoint, formFields }) => {
 
     const fetchProperties = useCallback(async () => {
         try {
-            const response = await axios.get('http://157.173.114.224:8080/properties');
+            const response = await axios.get(`${API_BASE}/properties`);
             dispatch({ type: 'SET_PROPERTIES', payload: response.data });
         } catch (err) {
             console.error("Error fetching properties:", err);

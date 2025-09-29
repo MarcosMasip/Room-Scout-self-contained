@@ -4,6 +4,7 @@ import './LoginRegisterForm.css';
 import { FaUser, FaLock, FaEnvelope } from "react-icons/fa";
 import { HiIdentification } from "react-icons/hi2";
 import axios from 'axios';
+import { API_BASE } from '../../../api/baseUrl';
 
 const LoginRegisterForm = () => {
     const [action, setAction] = useState('');
@@ -30,7 +31,7 @@ const LoginRegisterForm = () => {
     const registerUser = async (event) => {
         event.preventDefault();
         try {
-            const response = await axios.post('http://157.173.114.224:8080/users', {
+            const response = await axios.post(`${API_BASE}/users`, {
                 username,
                 identification: parseInt(identification),
                 email,
@@ -57,7 +58,7 @@ const LoginRegisterForm = () => {
     const loginUser = async (event) => {
         event.preventDefault();
         try {
-            const response = await axios.post('http://157.173.114.224:8080/users/login', {
+            const response = await axios.post(`${API_BASE}/users/login`, {
                 email: loginEmail,
                 password: loginPassword
             });

@@ -1,5 +1,6 @@
 import React from "react";
 import DynamicCrud from "../DynamicCRUD";
+import { API_BASE } from '../../../../api/baseUrl';
 
 const columns = [
     { field: 'id', headerName: 'ID', width: 90 },
@@ -14,7 +15,7 @@ const formFields = [
     { name: 'propertyId', label: 'Property', type: 'text' }
 ];
 
-const apiEndpoint = 'http://157.173.114.224:8080/addons';
+const apiEndpoint = `${API_BASE}/addons`;
 
 const AddOnCRUD = () => {
     return (

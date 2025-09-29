@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useHeaderContext } from '../../../context/HeaderContext';
 import './CategoryResults.css';
 import axios from 'axios';
+import { API_BASE } from '../../../api/baseUrl';
 
 const CategoryResults = () => {
     const { selectedCategory, searchData } = useHeaderContext();
@@ -14,7 +15,7 @@ const CategoryResults = () => {
             if (!selectedCategory) return;
 
             try {
-                const response = await axios.get(`http://157.173.114.224:8080/properties/type/${selectedCategory}`);
+                const response = await axios.get(`${API_BASE}/properties/type/${selectedCategory}`);
                 setProperties(response.data);
             } catch (error) {
                 console.error('Error al cargar las propiedades:', error);
